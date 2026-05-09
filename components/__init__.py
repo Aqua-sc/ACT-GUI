@@ -1,3 +1,6 @@
 from .component_interface import ComponentInterface
 from .ic import ICComponent
+from .dram import DRAMComponent
+from .ssd import SSDComponent
+from .hdd import HDDComponent
 from .figures.piechart import PieChartComponent

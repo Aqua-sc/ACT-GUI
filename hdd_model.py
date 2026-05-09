@@ -29,9 +29,9 @@ class Fab_HDD():
 
     def set_capacity(self, capacity):
         self.capacity = capacity
-        self.carbon = carbon_per_gb
+        self.carbon = self.carbon_per_gb * self.capacity
 
-        return
+        return 
 
     def get_carbon(self, ):
         return self.carbon
