@@ -1,0 +1,144 @@
+from dataclasses import dataclass, replace
+import random
+from typing import List
+from nicegui import ui
+from util import format_carbon
+from components import ComponentInterface
+from logic_model import Fab_Logic
+import json
+
+
+@dataclass
+class ICState:
+    gpa: str
+    carbon_intensity: str
+    process_node: str
+    fab_yield: float
+    area: float
+
+
+
+
+class ICComponent(ComponentInterface):
+    def __init__(self, refreshcallback: callable):
+
+        self.PROCESS_NODES = self.get_process_nodes()
+        self.CARBON_INTENSITIES = self.get_carbon_intensities()
+
+        self.state = ICState(
+            gpa="95",
+            carbon_intensity=self.CARBON_INTENSITIES[0],
+            process_node=self.PROCESS_NODES[0].removesuffix("nm"),
+            fab_yield=0.875,
+            area=0
+        )
+            
+        self.label = "IC_" + str(random.randint(0, 1000))
+
+        self.result = None
+        self.refreshcallback = refreshcallback
+
+        
+
+    def get_label(self):
+        return self.label
+    
+    def get_process_nodes(self) -> List[str]:
+        with open("logic/gpa_95.json", "r") as f:
+            process_node_map = json.load(f)
+            return list(process_node_map.keys())
+        
+    def get_carbon_intensities(self):
+        keys = []
+        with open("carbon_intensity/source.json") as f:
+            carbon_intensity_map = json.load(f)
+            keys.extend(
+                [ "src_" + k for k in carbon_intensity_map.keys()]
+            )
+        with open("carbon_intensity/location.json") as f:
+            carbon_intensity_map = json.load(f)
+            keys.extend(
+                [ "loc_" + k for k in carbon_intensity_map.keys()]
+            )
+        return keys
+
+    def compute(self) -> float:
+        logic = Fab_Logic(
+            gpa=self.state.gpa,
+            carbon_intensity=self.state.carbon_intensity,
+            process_node=self.state.process_node,
+            fab_yield=self.state.fab_yield,
+        )
+
+        logic.set_area(self.state.area)
+
+        return logic.get_carbon()
+    
+    def refresh(self) -> None:
+        result = self.compute()
+
+        self.result_label.set_text(
+            format_carbon(result)
+        )
+
+    def update_state(self, **kwargs):
+        self.state = replace(self.state, **kwargs)
+        self.refreshcallback()
+
+    def set_label(self, value: str):
+        self.label = value
+        self.refreshcallback()
+
+    async def on_yield_change(self, e):
+        value = max(0.0, min(1.0, float(e.value)))
+
+        self.update_state(fab_yield=value)
+
+        self.yield_input.value = value
+        self.yield_input.update()
+    
+    def build_ui(self):
+        with ui.card():
+            self.label_input = ui.input(
+                value=self.label,
+                on_change=lambda e: self.set_label(e.value)
+            ).props('borderless dense')
+
+            ui.number(
+                "Area (cm²)",
+                value=self.state.area,
+                step=0.01,
+                on_change=lambda e:
+                    self.update_state(area=e.value),
+            ).classes('w-full')
+
+            ui.select(
+                options=self.PROCESS_NODES,
+                value=self.state.process_node+"nm",
+                label="Process node",
+                on_change=lambda e: self.update_state(process_node=e.value.removesuffix("nm")),
+            ).classes('w-full')
+
+            ui.select(
+                options=self.CARBON_INTENSITIES,
+                value=self.state.carbon_intensity,
+                label="Carbon intensity",
+                on_change=lambda e: self.update_state(carbon_intensity=e.value),
+            ).classes('w-full')
+
+            self.yield_input = ui.number(
+                "Fab yield",
+                value=self.state.fab_yield,
+                min=0,
+                max=1,
+                step=0.01,
+                validation={
+                    'Must be between 0 and 1': lambda v: 0 < float(v) <= 1
+                },
+                on_change=self.on_yield_change,
+            ).classes('w-full')
+
+            self.result_label = ui.label("Result")
+
+        self.refresh()
+
