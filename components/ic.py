@@ -4,6 +4,7 @@ from typing import List
 from nicegui import ui
 from util import format_carbon
 from components import ComponentInterface
+from components.overwrites import OVERWRITE_TYPE, OverwriteInfo
 from logic_model import Fab_Logic
 import json
 
@@ -15,9 +16,6 @@ class ICState:
     process_node: str
     fab_yield: float
     area: float
-
-
-
 
 class ICComponent(ComponentInterface):
     def __init__(
@@ -44,6 +42,31 @@ class ICComponent(ComponentInterface):
         self.refreshcallback = refreshcallback
         self.deletecallback = deletecallback
         self.color = color
+
+    def get_overwrites(self) -> List[OverwriteInfo]:
+        return [
+            OverwriteInfo(
+                field="area",
+                type=OVERWRITE_TYPE.RANGED_FP,
+                range_min=0
+            ),
+            OverwriteInfo(
+                field="process_node",
+                type=OVERWRITE_TYPE.DROPDOWN_STR,
+                values_str=self.PROCESS_NODES
+            ),
+            OverwriteInfo(
+                field="carbon_intensity",
+                type=OVERWRITE_TYPE.DROPDOWN_STR,
+                values_str=self.CARBON_INTENSITIES
+            ),
+            OverwriteInfo(
+                field="yield",
+                type=OVERWRITE_TYPE.RANGED_FP,
+                range_min=0.001,
+                range_max=1
+            )
+        ]
         
     def get_label(self):
         return self.label
@@ -173,4 +196,3 @@ class ICComponent(ComponentInterface):
             self.result_label = ui.label("Result")
 
         self.refresh()
-

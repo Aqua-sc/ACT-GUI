@@ -5,6 +5,7 @@ from nicegui import ui
 from hdd_model import Fab_HDD
 from util import format_carbon
 from components import ComponentInterface
+from components.overwrites import OVERWRITE_TYPE, OverwriteInfo
 import json
 
 
@@ -40,6 +41,20 @@ class HDDComponent(ComponentInterface):
 
     def get_color(self):
         return self.color
+
+    def get_overwrites(self) -> List[OverwriteInfo]:
+        return [
+            OverwriteInfo(
+                field="capacity",
+                type=OVERWRITE_TYPE.RANGED_FP,
+                range_min=0
+            ),
+            OverwriteInfo(
+                field="process_node",
+                type=OVERWRITE_TYPE.DROPDOWN_STR,
+                values_str=self.PROCESS_NODES
+            )
+        ]
     
     def get_process_nodes(self) -> List[str]:
         with open("hdd/hdd_consumer.json", 'r') as f:

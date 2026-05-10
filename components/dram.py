@@ -5,6 +5,7 @@ from nicegui import ui
 from dram_model import Fab_DRAM
 from util import format_carbon
 from components import ComponentInterface
+from components.overwrites import OVERWRITE_TYPE, OverwriteInfo
 import json
 
 
@@ -35,6 +36,26 @@ class DRAMComponent(ComponentInterface):
         self.refreshcallback = refreshcallback
         self.deletecallback = deletecallback
         self.color = color
+
+    def get_overwrites(self) -> List[OverwriteInfo]:
+        return [
+            OverwriteInfo(
+                field="capacity",
+                type=OVERWRITE_TYPE.RANGED_FP,
+                range_min=0
+            ),
+            OverwriteInfo(
+                field="process_node",
+                type=OVERWRITE_TYPE.DROPDOWN_STR,
+                values_str=self.PROCESS_NODES
+            ),
+            OverwriteInfo(
+                field="yield",
+                type=OVERWRITE_TYPE.RANGED_FP,
+                range_min=0.001,
+                range_max=1
+            )
+        ]
 
 
     def get_label(self):

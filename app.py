@@ -1,7 +1,10 @@
 from enum import Enum
 from typing import List
 
-from components import ComponentInterface, ICComponent, PieChartComponent, DRAMComponent, SSDComponent, HDDComponent
+from components import (
+    ComponentInterface, ICComponent, DRAMComponent, SSDComponent, HDDComponent,
+    PieChartComponent, ComparingPlotComponent
+)
 from dram_model import Fab_DRAM
 from logic_model import Fab_Logic
 from nicegui import ui
@@ -46,7 +49,8 @@ components: List[ComponentInterface] = []
 components_column = None
 chart_container = None
 total_label = None
-piechart = PieChartComponent(components[::])
+piechart = PieChartComponent(components)
+comparingPlot = ComparingPlotComponent(components)
 
 def refresh():
     try: 
@@ -54,13 +58,18 @@ def refresh():
 
         for component in components:
             component.refresh()
+
+        labels = [x.get_label() for x in components]
+        if len(labels) != len(set(labels)):
+            error_label.set_text(f"Make sure all components have a unique name")
     
         piechart.refresh(components)
+        comparingPlot.refresh(components)
 
         total = sum([c.compute() for c in components])
         total_label.set_text(f"Total Carbon: {format_carbon(total)}")
-    except:
-        error_label.set_text(f"Error during refresh")
+    except Exception as e:
+        error_label.set_text(f"Error during refresh: {e}")
 
 def delete(component: ComponentInterface):
     PALETTE.append(component.get_color())
@@ -107,8 +116,8 @@ def add_component(type: COMPONENT_TYPE):
 
 
 with ui.column():
-    with ui.row():
-        with ui.column():
+    with ui.row().classes("flex"):
+        with ui.column().classes("flex-1"):
             ui.label("IC Footprint Calculator").classes(
                 'text-2xl font-bold'
             )
@@ -144,5 +153,7 @@ with ui.column():
 
             with chart_container:
                 piechart.build_ui()
+                comparingPlot.build_ui()
+
 
 ui.run()
