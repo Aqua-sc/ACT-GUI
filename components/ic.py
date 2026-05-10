@@ -20,7 +20,7 @@ class ICState:
 
 
 class ICComponent(ComponentInterface):
-    def __init__(self, refreshcallback: callable):
+    def __init__(self, refreshcallback: callable, deletecallback: callable):
 
         self.PROCESS_NODES = self.get_process_nodes()
         self.CARBON_INTENSITIES = self.get_carbon_intensities()
@@ -37,9 +37,8 @@ class ICComponent(ComponentInterface):
 
         self.result = None
         self.refreshcallback = refreshcallback
-
+        self.deletecallback = deletecallback
         
-
     def get_label(self):
         return self.label
     
@@ -105,12 +104,25 @@ class ICComponent(ComponentInterface):
         self.area_input.value = value
         self.area_input.update()
 
+    def delete(self):
+        self.card.delete()
+        self.deletecallback(self)
+    
     def build_ui(self):
-        with ui.card():
-            self.label_input = ui.input(
-                value=self.label,
-                on_change=lambda e: self.set_label(e.value)
-            ).props('borderless dense')
+        self.card = ui.card()
+        with self.card:
+            with ui.row():
+                self.label_input = ui.input(
+                    value=self.label,
+                    on_change=lambda e: self.set_label(e.value)
+                ).props('borderless dense')
+
+                ui.button(
+                    icon='delete',
+                    on_click=self.delete  
+                ).props('flat round dense color=red').classes(
+                    'absolute top-2 right-2'
+                )
 
             self.area_input = ui.number(
                 "Area (cm²)",

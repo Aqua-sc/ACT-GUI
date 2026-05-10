@@ -36,15 +36,19 @@ def refresh():
     except:
         error_label.set_text(f"Error during refresh")
 
+def delete(component: ComponentInterface):
+    components.remove(component)
+    refresh()
+
 def add_component(type: COMPONENT_TYPE):
     if type == COMPONENT_TYPE.IC:
-        component = ICComponent(refreshcallback=refresh)
+        component = ICComponent(refreshcallback=refresh, deletecallback=delete)
     elif type == COMPONENT_TYPE.DRAM:
-        component = DRAMComponent(refreshcallback=refresh)
+        component = DRAMComponent(refreshcallback=refresh, deletecallback=delete)
     elif type == COMPONENT_TYPE.SSD:
-        component = SSDComponent(refreshcallback=refresh)
+        component = SSDComponent(refreshcallback=refresh, deletecallback=delete)
     elif type == COMPONENT_TYPE.HDD:
-        component = HDDComponent(refreshcallback=refresh)
+        component = HDDComponent(refreshcallback=refresh, deletecallback=delete)
 
     components.append(component)
 
