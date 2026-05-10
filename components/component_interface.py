@@ -19,7 +19,7 @@ class ComponentInterface:
         pass
 
     def compute_changed(self, **kwargs) -> float:
-        return self.compute()
+        pass
     
     def get_overwrites(self) -> List[OverwriteInfo]:
         pass

@@ -61,7 +61,7 @@ class ICComponent(ComponentInterface):
                 values_str=self.CARBON_INTENSITIES
             ),
             OverwriteInfo(
-                field="yield",
+                field="fab_yield",
                 type=OVERWRITE_TYPE.RANGED_FP,
                 range_min=0.001,
                 range_max=1
@@ -94,14 +94,28 @@ class ICComponent(ComponentInterface):
         return keys
 
     def compute(self) -> float:
+        return self._compute(self.state)
+    
+    def compute_changed(self, **kwargs):
+        if "process_node" in kwargs:
+            kwargs["process_node"] = (
+                str(kwargs["process_node"])
+                .removesuffix("nm")
+            )
+
+        new_state = replace(self.state, **kwargs)
+
+        return self._compute(new_state)
+    
+    def _compute(self, state: ICState):
         logic = Fab_Logic(
-            gpa=self.state.gpa,
-            carbon_intensity=self.state.carbon_intensity,
-            process_node=self.state.process_node,
-            fab_yield=self.state.fab_yield,
+            gpa=state.gpa,
+            carbon_intensity=state.carbon_intensity,
+            process_node=state.process_node,
+            fab_yield=state.fab_yield
         )
 
-        logic.set_area(self.state.area)
+        logic.set_area(state.area)
 
         return logic.get_carbon()
     

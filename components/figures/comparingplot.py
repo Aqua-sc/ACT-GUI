@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import List
 
 import plotly.graph_objects as go
@@ -9,9 +10,14 @@ from components.overwrites import OverwriteInfo, OVERWRITE_TYPE
 class ComparingPlotComponent:
     def __init__(self, components):
         self.components : List[ComponentInterface] = components
+        self.graph_type = self.GRAPH_TYPE.BAR
         self.overwrite : OverwriteCard | None = None
         self.chart = None
         self.fig = None
+
+    class GRAPH_TYPE(Enum):
+        BAR = 1
+        LINE = 2
 
     def get_component_labels(self) -> List[str]:
         return [c.get_label() for c in self.components]
@@ -23,16 +29,21 @@ class ComparingPlotComponent:
 
         return None
 
-    def on_select_change(self, e):
+    def on_component_select_change(self, e):
         label = e.value
+
         component = self.find_component_by_label(label)
         if (component):
             if self.overwrite:
                 self.overwrite.refresh(component)
             else:
-                self.overwrite = OverwriteCard(component)
+                self.overwrite = OverwriteCard(component, self.refresh_graph)
         
         self.render_overwrite_card()
+    
+    def on_graph_select_change(self, e):
+        self.graph_type = self.GRAPH_TYPE[e.value]
+        self.refresh_graph()
 
     def render_overwrite_card(self):
         self.overwrite_container.clear()
@@ -47,37 +58,156 @@ class ComparingPlotComponent:
         self.components = components
         labels = self.get_component_labels()
 
-        self.select.options = labels
-        self.select.update()
+        self.component_select.options = labels
+        self.component_select.update()
 
         if (
             self.overwrite is not None
             and self.overwrite.get_component() not in self.components
         ):
             self.overwrite = None
-            self.select.value = None
-            self.select.update()
+            self.component_select.value = None
+            self.component_select.update()
 
             self.overwrite_container.clear()
         elif self.overwrite is not None:
             self.render_overwrite_card()
 
-    def build_ui(self):
-        with ui.column():
-            self.select = ui.select(
-                options=self.get_component_labels(),
-                label="Select component",
-                on_change=self.on_select_change,
-            ).classes("w-64")
+        self.refresh_graph()
 
-            self.overwrite_container = ui.column()
+    def compute_scenario(self, overwrite_value=None):
+        values = []
+
+        target = self.overwrite.get_component() if self.overwrite else None
+
+        for c in self.components:
+            if target and c == target and overwrite_value is not None:
+                values.append(overwrite_value)
+            else:
+                values.append(c.compute())
+
+        return values
+
+    def refresh_graph(self):
+        self.fig.data = []
+
+        overwrite_values = self.overwrite.get_values() if self.overwrite else []
+        title, labels = self.overwrite.get_labels() if self.overwrite else ("", [])
+
+        if self.graph_type == self.GRAPH_TYPE.BAR:
+            if overwrite_values:
+                for i, ov in enumerate(overwrite_values):
+                    values = self.compute_scenario(ov)
+                    for c, v in zip(self.components, values):
+                        self.fig.add_trace(
+                            go.Bar(
+                                x=[labels[i]] if labels else [f"Scenario {i}"],
+                                y=[v],
+                                name=c.get_label(),
+                                marker=dict(color=c.get_color()),
+                                showlegend=(i == 0)
+                            )
+                        )
+                
+                self.fig.update_layout(
+                    xaxis_title=title if title else "Selected scenario's",
+                    yaxis_title="Carbon (g CO2)"
+                )
+            else:
+                values = self.compute_scenario()
+                for c, v in zip(self.components, values):
+                    self.fig.add_trace(
+                        go.Bar(
+                            x=["Base"],
+                            y=[v],
+                            name=c.get_label(),
+                            marker=dict(color=c.get_color())
+                        )
+                    )
+
+                self.fig.update_layout(
+                    xaxis_title="",
+                    yaxis_title="Carbon (g CO2)"
+                )
+            self.fig.update_layout(barmode="stack")
+
+        elif self.graph_type == self.GRAPH_TYPE.LINE:
+            if overwrite_values:
+                x_vals = []
+                y_vals = []
+                for i, ov in enumerate(overwrite_values):
+                    values = self.compute_scenario(ov)
+                    total = sum(values)
+
+                    x_vals.append(labels[i] if labels else f"Scenario {i}")
+                    y_vals.append(total)
+            
+                self.fig.add_trace(
+                    go.Scatter(
+                        x=x_vals,
+                        y=y_vals,
+                        mode="lines+markers",
+                        name="Total",
+                        showlegend=False
+                    )
+                )
+
+                self.fig.update_layout(
+                    xaxis_title=title if title else "Selected scenario's",
+                    yaxis_title="Total Carbon (g CO2)"
+                )
+
+            else:
+                total = sum(self.compute_scenario())
+                self.fig.add_trace(
+                    go.Scatter(
+                        x=["Base"],
+                        y=[total],
+                        mode="lines+markers"
+                    )
+                )
+
+                self.fig.update_layout(
+                    xaxis_title="",
+                    yaxis_title="Total Carbon (g CO2)"
+                )
+            
+        self.fig.update_layout(
+            yaxis=dict(rangemode="tozero")
+        )
+        self.chart.update()
+
+    def build_ui(self):
+        with ui.row():
+            with ui.column():
+                with ui.row():
+                    self.component_select = ui.select(
+                        options=self.get_component_labels(),
+                        label="Select component",
+                        on_change=self.on_component_select_change,
+                    ).classes("w-64")
+
+                    self.graph_select = ui.select(
+                        options=[t.name for t in self.GRAPH_TYPE],
+                        value=self.graph_type.name,
+                        label="Select graph type",
+                        on_change=self.on_graph_select_change,
+                    )
+
+                self.overwrite_container = ui.column()
+            
+            self.fig = go.Figure()
+            self.chart = ui.plotly(self.fig).classes('w-96 h-96')
+
+        self.refresh(self.components)
 
 class OverwriteCard:
-    def __init__(self, component: ComponentInterface):
+    def __init__(self, component: ComponentInterface, refreshcallback: callable):
         self.component : ComponentInterface = component
         self.overwrites : List[OverwriteInfo] = component.get_overwrites()
         self.selected_overwrite = self.overwrites[1] if len(self.overwrites) > 0 else None
         self.selected_values = []
+        self.refreshcallback = refreshcallback
 
     def get_component(self) -> ComponentInterface:
         return self.component
@@ -115,6 +245,15 @@ class OverwriteCard:
         with self.container:
             self.build_overwrites()
 
+    def get_values(self):
+        return [self.component.compute_changed(**{self.selected_overwrite.field: x}) for x in self.selected_values]
+
+    def get_labels(self):
+        return (
+            f"{self.component.get_label()} {self.selected_overwrite.field.replace("_", " ")}", 
+            [str(x) for x in self.selected_values]
+        )
+    
     def build_ui(self):
         with ui.card().classes("w-96 gap-4"):
             self.overwrite_select = ui.select(
@@ -174,6 +313,8 @@ class OverwriteCard:
                             refresh_ui()
 
                         chip.on("remove", remove_value)
+            
+            self.refreshcallback()
 
         def on_select(e):
             value = e.value
@@ -231,9 +372,10 @@ class OverwriteCard:
                             refresh_ui()
 
                         chip.on("remove", remove_value)
+            
+            self.refreshcallback()
 
         def add_value():
-            print("ADDING: ", input_box.value)
             if input_box.value == "":
                 return
 

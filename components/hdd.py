@@ -66,11 +66,17 @@ class HDDComponent(ComponentInterface):
         return list(process_node_map.keys())
 
     def compute(self) -> float:
-        logic = Fab_HDD(
-            config=self.state.process_node,
-        )
+        return self._compute(self.state)
 
-        logic.set_capacity(self.state.capacity)
+    def compute_changed(self, **kwargs):
+        new_state = replace(self.state, **kwargs)
+        return self._compute(new_state)
+    
+    def _compute(self, state: HDDState):
+        logic = Fab_HDD(
+            config=state.process_node
+        )
+        logic.set_capacity(state.capacity)
 
         return logic.get_carbon()
     

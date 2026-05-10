@@ -50,7 +50,7 @@ class DRAMComponent(ComponentInterface):
                 values_str=self.PROCESS_NODES
             ),
             OverwriteInfo(
-                field="yield",
+                field="fab_yield",
                 type=OVERWRITE_TYPE.RANGED_FP,
                 range_min=0.001,
                 range_max=1
@@ -70,12 +70,18 @@ class DRAMComponent(ComponentInterface):
             return list(process_node_map.keys())
 
     def compute(self) -> float:
-        logic = Fab_DRAM(
-            config=self.state.process_node,
-            fab_yield=self.state.fab_yield,
-        )
+        return self._compute(self.state)
 
-        logic.set_capacity(self.state.capacity)
+    def compute_changed(self, **kwargs):
+        new_state = replace(self.state, **kwargs)
+        return self._compute(new_state)
+    
+    def _compute(self, state: DRAMState):
+        logic = Fab_DRAM(
+            config = state.process_node,
+            fab_yield=state.fab_yield
+        )
+        logic.set_capacity(state.capacity)
 
         return logic.get_carbon()
     
