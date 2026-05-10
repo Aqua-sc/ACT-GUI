@@ -90,13 +90,21 @@ class ICComponent(ComponentInterface):
         self.refreshcallback()
 
     async def on_yield_change(self, e):
-        value = max(0.0, min(1.0, float(e.value)))
+        value = max(0.001, min(1.0, float(e.value)))
 
         self.update_state(fab_yield=value)
 
         self.yield_input.value = value
         self.yield_input.update()
     
+    async def on_area_change(self, e):
+        value = max(0.0, float(e.value));
+
+        self.update_state(area=value)
+
+        self.area_input.value = value
+        self.area_input.update()
+
     def build_ui(self):
         with ui.card():
             self.label_input = ui.input(
@@ -104,12 +112,15 @@ class ICComponent(ComponentInterface):
                 on_change=lambda e: self.set_label(e.value)
             ).props('borderless dense')
 
-            ui.number(
+            self.area_input = ui.number(
                 "Area (cm²)",
                 value=self.state.area,
                 step=0.01,
-                on_change=lambda e:
-                    self.update_state(area=e.value),
+                min=0,
+                validation={
+                    'Must be positive': lambda v: 0 <= float(v)
+                },
+                on_change=self.on_area_change
             ).classes('w-full')
 
             ui.select(
@@ -129,7 +140,7 @@ class ICComponent(ComponentInterface):
             self.yield_input = ui.number(
                 "Fab yield",
                 value=self.state.fab_yield,
-                min=0,
+                min=0.001,
                 max=1,
                 step=0.01,
                 validation={

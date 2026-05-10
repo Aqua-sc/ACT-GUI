@@ -63,6 +63,14 @@ class HDDComponent(ComponentInterface):
     def set_label(self, value: str):
         self.label = value
         self.refreshcallback()
+
+    async def on_capacity_change(self, e):
+        value = max(0.0, float(e.value));
+
+        self.update_state(capacity=value)
+
+        self.capacity_input.value = value
+        self.capacity_input.update()
     
     def build_ui(self):
         with ui.card():
@@ -71,12 +79,15 @@ class HDDComponent(ComponentInterface):
                 on_change=lambda e: self.set_label(e.value)
             ).props('borderless dense')
 
-            ui.number(
+            self.capacity_input = ui.number(
                 "Capacity (GB)",
                 value=self.state.capacity,
                 step=0.5,
-                on_change=lambda e:
-                    self.update_state(capacity=e.value),
+                min=0,
+                validation={
+                    'Must be positive': lambda v: 0 <= float(v)
+                },
+                on_change=self.on_capacity_change,
             ).classes('w-full')
 
             ui.select(
