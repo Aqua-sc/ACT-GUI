@@ -20,7 +20,12 @@ class ICState:
 
 
 class ICComponent(ComponentInterface):
-    def __init__(self, refreshcallback: callable, deletecallback: callable):
+    def __init__(
+        self, 
+        refreshcallback: callable, 
+        deletecallback: callable,
+        color: str,
+    ):
 
         self.PROCESS_NODES = self.get_process_nodes()
         self.CARBON_INTENSITIES = self.get_carbon_intensities()
@@ -38,9 +43,13 @@ class ICComponent(ComponentInterface):
         self.result = None
         self.refreshcallback = refreshcallback
         self.deletecallback = deletecallback
+        self.color = color
         
     def get_label(self):
         return self.label
+    
+    def get_color(self):
+        return self.color
     
     def get_process_nodes(self) -> List[str]:
         with open("logic/gpa_95.json", "r") as f:

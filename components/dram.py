@@ -15,8 +15,12 @@ class DRAMState:
     capacity: float
 
 class DRAMComponent(ComponentInterface):
-    def __init__(self, refreshcallback: callable, deletecallback: callable):
-
+    def __init__(
+        self, 
+        refreshcallback: callable, 
+        deletecallback: callable,
+        color: str
+    ):
         self.PROCESS_NODES = self.get_process_nodes()
 
         self.state = DRAMState(
@@ -30,9 +34,14 @@ class DRAMComponent(ComponentInterface):
         self.result = None
         self.refreshcallback = refreshcallback
         self.deletecallback = deletecallback
+        self.color = color
+
 
     def get_label(self):
         return self.label
+    
+    def get_color(self):
+        return self.color
     
     def get_process_nodes(self) -> List[str]:
         with open("dram/dram_hynix.json", "r") as f:

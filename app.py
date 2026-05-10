@@ -15,6 +15,32 @@ class COMPONENT_TYPE(Enum):
     SSD = 3
     HDD = 4
 
+PALETTE =  [
+    '#1f77b4',
+    '#ff7f0e',  
+    '#2ca02c',  
+    '#d62728',  
+    '#9467bd',  
+    '#8c564b',  
+    '#e377c2',  
+    '#7f7f7f',  
+    '#bcbd22',  
+    '#17becf',  
+
+    '#393b79',  
+    '#637939',  
+    '#8c6d31',  
+    '#843c39',  
+    '#7b4173',  
+    "#aadae8",  
+    "#0a441b",  
+    '#756bb1',  
+    '#636363',  
+    '#e6550d',  
+]
+
+MAX_COMPONENTS = len(PALETTE)
+
 components: List[ComponentInterface] = []
 
 components_column = None
@@ -37,18 +63,40 @@ def refresh():
         error_label.set_text(f"Error during refresh")
 
 def delete(component: ComponentInterface):
+    PALETTE.append(component.get_color())
     components.remove(component)
     refresh()
 
 def add_component(type: COMPONENT_TYPE):
+    if len(PALETTE) == 0:
+        error_label.set_text(f"Max amount of components reached: {len(components)}/{MAX_COMPONENTS}")
+        return
+    
+    color = PALETTE.pop()
     if type == COMPONENT_TYPE.IC:
-        component = ICComponent(refreshcallback=refresh, deletecallback=delete)
+        component = ICComponent(
+            refreshcallback=refresh, 
+            deletecallback=delete,
+            color = color
+        )
     elif type == COMPONENT_TYPE.DRAM:
-        component = DRAMComponent(refreshcallback=refresh, deletecallback=delete)
+        component = DRAMComponent(
+            refreshcallback=refresh, 
+            deletecallback=delete,
+            color = color
+        )
     elif type == COMPONENT_TYPE.SSD:
-        component = SSDComponent(refreshcallback=refresh, deletecallback=delete)
+        component = SSDComponent(
+            refreshcallback=refresh, 
+            deletecallback=delete,
+            color = color
+        )
     elif type == COMPONENT_TYPE.HDD:
-        component = HDDComponent(refreshcallback=refresh, deletecallback=delete)
+        component = HDDComponent(
+            refreshcallback=refresh, 
+            deletecallback=delete,
+            color = color
+        )
 
     components.append(component)
 

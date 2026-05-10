@@ -1,6 +1,9 @@
 class ComponentInterface:
     def get_label(self) -> str:
         pass
+    
+    def get_color(self) -> str:
+        pass
 
     def compute(self) -> float:
         pass
