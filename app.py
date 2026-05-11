@@ -46,7 +46,7 @@ MAX_COMPONENTS = len(PALETTE)
 
 components: List[ComponentInterface] = []
 
-components_column = None
+components_row = None
 chart_container = None
 total_label = None
 piechart = PieChartComponent(components)
@@ -109,7 +109,7 @@ def add_component(type: COMPONENT_TYPE):
 
     components.append(component)
 
-    with components_column:
+    with components_row:
         component.build_ui()
 
     refresh()
@@ -145,8 +145,9 @@ with ui.column():
                     on_click=lambda _: add_component(COMPONENT_TYPE.HDD)
                 )
 
-            components_column = ui.row()
-
+            components_row = ui.row().classes(
+                "flex-nowrap max-w-[50vw] overflow-x-auto overflow-y-hidden p-3 gap-3"
+            )
         with ui.column():
             total_label = ui.label(f"Total Carbon: {format_carbon(0)}")
             chart_container = ui.column().classes('w-full')
