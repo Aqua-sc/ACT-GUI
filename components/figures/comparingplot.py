@@ -10,6 +10,7 @@ from components.overwrites import OverwriteInfo, OVERWRITE_TYPE
 class ComparingPlotComponent:
     def __init__(self, components):
         self.components : List[ComponentInterface] = components
+        self.selected_components = []
         self.graph_type = self.GRAPH_TYPE.BAR
         self.overwrite : OverwriteCard | None = None
         self.chart = None
@@ -29,7 +30,7 @@ class ComparingPlotComponent:
 
         return None
 
-    def on_component_select_change(self, e):
+    def on_overwritecomponent_select_change(self, e):
         label = e.value
 
         component = self.find_component_by_label(label)
@@ -45,6 +46,10 @@ class ComparingPlotComponent:
         self.graph_type = self.GRAPH_TYPE[e.value]
         self.refresh_graph()
 
+    def on_components_select_change(self, e):
+        self.selected_components = [self.find_component_by_label(l) for l in e.value]
+        self.refresh_graph()
+
     def render_overwrite_card(self):
         self.overwrite_container.clear()
 
@@ -58,16 +63,19 @@ class ComparingPlotComponent:
         self.components = components
         labels = self.get_component_labels()
 
-        self.component_select.options = labels
-        self.component_select.update()
+        self.overwritecomponent_select.options = labels
+        self.overwritecomponent_select.update()
+
+        self.components_select.options = labels
+        self.components_select.update()
 
         if (
             self.overwrite is not None
             and self.overwrite.get_component() not in self.components
         ):
             self.overwrite = None
-            self.component_select.value = None
-            self.component_select.update()
+            self.overwritecomponent_select.value = None
+            self.overwritecomponent_select.update()
 
             self.overwrite_container.clear()
         elif self.overwrite is not None:
@@ -75,12 +83,12 @@ class ComparingPlotComponent:
 
         self.refresh_graph()
 
-    def compute_scenario(self, overwrite_value=None):
+    def compute_scenario(self, components, overwrite_value=None):
         values = []
 
         target = self.overwrite.get_component() if self.overwrite else None
 
-        for c in self.components:
+        for c in components:
             if target and c == target and overwrite_value is not None:
                 values.append(overwrite_value)
             else:
@@ -94,11 +102,37 @@ class ComparingPlotComponent:
         overwrite_values = self.overwrite.get_values() if self.overwrite else []
         title, labels = self.overwrite.get_labels() if self.overwrite else ("", [])
 
+        if self.selected_components:
+            components = list(filter(lambda e: e in self.selected_components, self.components))
+        else:
+            components = self.components
+
+        scenarios = (
+            [self.compute_scenario(components, ov) for ov in overwrite_values] if overwrite_values 
+            else [self.compute_scenario(components)]
+        )
+        totals = [sum(s) for s in scenarios]
+
         if self.graph_type == self.GRAPH_TYPE.BAR:
+            largest_scenario = scenarios[0]
+            largest_value = totals[0]
+            for i, t in enumerate(totals[1:]):
+                if t > largest_value:
+                    largest_scenario = scenarios[i]
+                    largest_value = t
+
+            order = sorted(
+                range(len(components)), 
+                key=lambda i: largest_scenario[i], 
+                reverse=True
+            )        
+
+            components = [components[i] for i in order]
+
             if overwrite_values:
-                for i, ov in enumerate(overwrite_values):
-                    values = self.compute_scenario(ov)
-                    for c, v in zip(self.components, values):
+                for i, values in enumerate(scenarios):
+                    values = [values[i] for i in order]
+                    for c, v in zip(components, values):
                         self.fig.add_trace(
                             go.Bar(
                                 x=[labels[i]] if labels else [f"Scenario {i}"],
@@ -114,8 +148,8 @@ class ComparingPlotComponent:
                     yaxis_title="Carbon (g CO2)"
                 )
             else:
-                values = self.compute_scenario()
-                for c, v in zip(self.components, values):
+                values = [scenarios[0][i] for i in order]
+                for c, v in zip(components, values):
                     self.fig.add_trace(
                         go.Bar(
                             x=["Base"],
@@ -135,10 +169,7 @@ class ComparingPlotComponent:
             if overwrite_values:
                 x_vals = []
                 y_vals = []
-                for i, ov in enumerate(overwrite_values):
-                    values = self.compute_scenario(ov)
-                    total = sum(values)
-
+                for i, total in enumerate(totals):
                     x_vals.append(labels[i] if labels else f"Scenario {i}")
                     y_vals.append(total)
             
@@ -158,7 +189,7 @@ class ComparingPlotComponent:
                 )
 
             else:
-                total = sum(self.compute_scenario())
+                total = sum(totals[0])
                 self.fig.add_trace(
                     go.Scatter(
                         x=["Base"],
@@ -181,23 +212,31 @@ class ComparingPlotComponent:
         with ui.row():
             with ui.column():
                 with ui.row():
-                    self.component_select = ui.select(
+                    self.overwritecomponent_select = ui.select(
                         options=self.get_component_labels(),
-                        label="Select component",
-                        on_change=self.on_component_select_change,
+                        label="Select overwrite component",
+                        on_change=self.on_overwritecomponent_select_change,
                     ).classes("w-64")
 
                     self.graph_select = ui.select(
                         options=[t.name for t in self.GRAPH_TYPE],
                         value=self.graph_type.name,
-                        label="Select graph type",
+                        label="Plot",
                         on_change=self.on_graph_select_change,
                     )
-
+                
                 self.overwrite_container = ui.column()
-            
-            self.fig = go.Figure()
-            self.chart = ui.plotly(self.fig).classes('w-96 h-96')
+
+            with ui.column():
+                self.components_select = ui.select(
+                    options=self.get_component_labels(),
+                    label="Select components",
+                    multiple=True,
+                    on_change=self.on_components_select_change
+                )
+
+                self.fig = go.Figure()
+                self.chart = ui.plotly(self.fig).classes('w-96 h-96')
 
         self.refresh(self.components)
 
