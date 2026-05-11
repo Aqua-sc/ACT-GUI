@@ -118,7 +118,7 @@ def add_component(type: COMPONENT_TYPE):
 with ui.column():
     with ui.row().classes("flex"):
         with ui.column().classes("flex-1"):
-            ui.label("IC Footprint Calculator").classes(
+            ui.label("ACT: Architectural Carbon Modeling Tool").classes(
                 'text-2xl font-bold'
             )
 
@@ -156,4 +156,4 @@ with ui.column():
                 comparingPlot.build_ui()
 
 
-ui.run()
+ui.run(title='ACT', favicon="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn-icons-png.flaticon.com%2F512%2F6859%2F6859918.png&f=1&nofb=1&ipt=c142a04ad55371696e010c6739a262a017330d994151ebf5091859e898146c45")
