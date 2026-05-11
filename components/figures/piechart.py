@@ -17,7 +17,7 @@ class PieChartComponent:
             data=[go.Pie(labels=[], values=[], hole=0.3, marker=dict(colors=[]))]
         )
 
-        self.chart = ui.plotly(self.fig).classes('w-96 h-96')
+        self.chart = ui.plotly(self.fig).classes('w-[25vw] h-96')
 
         self.refresh(self.components)
 

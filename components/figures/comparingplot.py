@@ -210,34 +210,32 @@ class ComparingPlotComponent:
         self.chart.update()
 
     def build_ui(self):
-        with ui.row():
-            with ui.column():
-                with ui.row():
-                    self.overwritecomponent_select = ui.select(
-                        options=self.get_component_labels(),
-                        label="Select overwrite component",
-                        on_change=self.on_overwritecomponent_select_change,
-                    ).classes("w-64")
+        with ui.column().classes("w-[25vw] min-w-0 items-stretch"):
+            self.fig = go.Figure()
+            self.chart = ui.plotly(self.fig).classes('w-full h-96')
+            
+            with ui.row().classes("w-full flex-nowrap"):
+                self.overwritecomponent_select = ui.select(
+                    options=self.get_component_labels(),
+                    label="Select overwrite component",
+                    on_change=self.on_overwritecomponent_select_change,
+                ).classes("flex-auto")
 
-                    self.graph_select = ui.select(
-                        options=[t.name for t in self.GRAPH_TYPE],
-                        value=self.graph_type.name,
-                        label="Plot",
-                        on_change=self.on_graph_select_change,
-                    )
-                
-                self.overwrite_container = ui.column()
+                self.graph_select = ui.select(
+                    options=[t.name for t in self.GRAPH_TYPE],
+                    value=self.graph_type.name,
+                    label="Plot",
+                    on_change=self.on_graph_select_change,
+                ).classes("w-20")
 
-            with ui.column():
                 self.components_select = ui.select(
                     options=self.get_component_labels(),
                     label="Select components",
                     multiple=True,
                     on_change=self.on_components_select_change
-                )
+                ).classes("flex-auto")
 
-                self.fig = go.Figure()
-                self.chart = ui.plotly(self.fig).classes('w-96 h-96')
+            self.overwrite_container = ui.column().classes("min-w-0")
 
         self.refresh(self.components)
 
@@ -245,7 +243,7 @@ class OverwriteCard:
     def __init__(self, component: ComponentInterface, refreshcallback: callable):
         self.component : ComponentInterface = component
         self.overwrites : List[OverwriteInfo] = component.get_overwrites()
-        self.selected_overwrite = self.overwrites[1] if len(self.overwrites) > 0 else None
+        self.selected_overwrite = self.overwrites[0] if len(self.overwrites) > 0 else None
         self.selected_values = []
         self.refreshcallback = refreshcallback
 
@@ -274,7 +272,7 @@ class OverwriteCard:
         self.component = component
         self.overwrites : List[OverwriteInfo] = component.get_overwrites()
         self.overwrites = self.overwrites if self.overwrites else []
-        self.selected_overwrite = self.overwrites[1] if len(self.overwrites) > 0 else None
+        self.selected_overwrite = self.overwrites[0] if len(self.overwrites) > 0 else None
         self.selected_values = []
         
         self.overwrite_select.options = [x.field for x in self.overwrites]
@@ -295,7 +293,7 @@ class OverwriteCard:
         )
     
     def build_ui(self):
-        with ui.card().classes("w-96 gap-4"):
+        with ui.card().classes("min-w-0 w-full gap-4 flex-none"):
             self.overwrite_select = ui.select(
                 options=[x.field for x in self.overwrites],
                 value=self.selected_overwrite.field,
@@ -303,9 +301,7 @@ class OverwriteCard:
                 on_change=self.refresh_selected
             ).classes("w-full")
 
-            self.container = ui.column().classes(
-                "w-full gap-4"
-            )
+            self.container = ui.column().classes("w-full gap-4 min-w-0")
 
             with self.container:
                 self.build_overwrites()
@@ -326,7 +322,7 @@ class OverwriteCard:
         self.selected_values
         available_options = [v for v in overwrite.values_str if v not in self.selected_values]
 
-        chips_container = ui.row().classes("gap-2")
+        chips_container = ui.row().classes("gap-1 flex-nowrap overflow-x-scroll")
 
         select = ui.select(
             options=available_options,
@@ -372,31 +368,72 @@ class OverwriteCard:
     def build_ranged_overwrite(self):
         overwrite = self.selected_overwrite
         chips_container = ui.row().classes(
-            "gap-2"
+            "w-full min-w-0 flex-nowrap overflow-x-auto gap-1"
         )
 
-        input_box = no_scroll_input(
-            label="Add value"
-        ).props(
-            "type=number"
-        ).classes(
-            "w-full"
-        )
+        with ui.row().classes("flex"):
+            input_box = no_scroll_input(
+                label="Add value"
+            ).props(
+                "type=number"
+            ).classes(
+                "flex-1"
+            )
 
-        input_box.on(
-            "wheel",
-            lambda e: None,
-            js_handler="""
-                (e) => {
-                    e.target.blur()
-                }
-            """
-        )
+            def add_value():
+                if input_box.value == "":
+                    return
 
-        input_box.on(
-            "keydown.enter",
-            lambda e: add_value()
-        )
+                try:
+                    value = float(input_box.value)
+
+                    if (
+                        overwrite.range_min is not None and value < overwrite.range_min
+                    ):
+                        ui.notify(f"Minimum value is {overwrite.range_min}")
+                        return
+
+                    if (
+                        overwrite.range_max is not None and value > overwrite.range_max
+                    ):
+                        ui.notify(f"Maximum value is {overwrite.range_max}")
+                        return
+
+                    if value not in self.selected_values:
+                        self.selected_values.append(value)
+                    else:
+                        ui.notify("Value already added")
+
+                    input_box.value = None
+                    input_box.update()
+
+                    refresh_ui()
+
+                except Exception as e:
+                    print(e)
+                    ui.notify(
+                        "Please enter a valid number"
+                    )
+
+            ui.button(
+                "Add",
+                on_click=add_value
+            ).classes("mt-3")
+
+            input_box.on(
+                "wheel",
+                lambda e: None,
+                js_handler="""
+                    (e) => {
+                        e.target.blur()
+                    }
+                """
+            )
+            
+            input_box.on(
+                "keydown.enter",
+                lambda e: add_value()
+            ).classes()
 
         def refresh_ui():
             self.selected_values.sort()
@@ -415,44 +452,8 @@ class OverwriteCard:
             
             self.refreshcallback()
 
-        def add_value():
-            if input_box.value == "":
-                return
+        
 
-            try:
-                value = float(input_box.value)
-
-                if (
-                    overwrite.range_min is not None and value < overwrite.range_min
-                ):
-                    ui.notify(f"Minimum value is {overwrite.range_min}")
-                    return
-
-                if (
-                    overwrite.range_max is not None and value > overwrite.range_max
-                ):
-                    ui.notify(f"Maximum value is {overwrite.range_max}")
-                    return
-
-                if value not in self.selected_values:
-                    self.selected_values.append(value)
-                else:
-                    ui.notify("Value already added")
-
-                input_box.value = None
-                input_box.update()
-
-                refresh_ui()
-
-            except Exception as e:
-                print(e)
-                ui.notify(
-                    "Please enter a valid number"
-                )
-
-        ui.button(
-            "Add",
-            on_click=add_value
-        )
+        
 
         refresh_ui()
