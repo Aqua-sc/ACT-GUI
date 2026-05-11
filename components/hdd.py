@@ -6,6 +6,7 @@ from hdd_model import Fab_HDD
 from util import format_carbon
 from components import ComponentInterface
 from components.overwrites import OVERWRITE_TYPE, OverwriteInfo
+from components.uivariants import no_scroll_number
 import json
 
 
@@ -123,7 +124,7 @@ class HDDComponent(ComponentInterface):
                     'absolute top-2 right-2'
                 )
 
-            self.capacity_input = ui.number(
+            self.capacity_input = no_scroll_number(
                 "Capacity (GB)",
                 value=self.state.capacity,
                 step=0.5,

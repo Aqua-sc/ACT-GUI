@@ -6,6 +6,7 @@ from ssd_model import Fab_SSD
 from util import format_carbon
 from components import ComponentInterface
 from components.overwrites import OVERWRITE_TYPE, OverwriteInfo
+from components.uivariants import no_scroll_number
 import json
 
 
@@ -88,7 +89,8 @@ class SSDComponent(ComponentInterface):
             config=state.process_node,
             fab_yield=state.fab_yield
         )
-        logic.set_capacity(state.fab_yield)
+        
+        logic.set_capacity(state.capacity)
 
         return logic.get_carbon()
     
@@ -143,7 +145,7 @@ class SSDComponent(ComponentInterface):
                     'absolute top-2 right-2'
                 )
 
-            self.capacity_input = ui.number(
+            self.capacity_input = no_scroll_number(
                 "Capacity (GB)",
                 value=self.state.capacity,
                 step=0.5,
@@ -161,7 +163,7 @@ class SSDComponent(ComponentInterface):
                 on_change=lambda e: self.update_state(process_node=e.value),
             ).classes('w-full')
 
-            self.yield_input = ui.number(
+            self.yield_input = no_scroll_number(
                 "Fab yield",
                 value=self.state.fab_yield,
                 min=0.001,

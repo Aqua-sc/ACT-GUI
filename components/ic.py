@@ -5,6 +5,7 @@ from nicegui import ui
 from util import format_carbon
 from components import ComponentInterface
 from components.overwrites import OVERWRITE_TYPE, OverwriteInfo
+from components.uivariants import no_scroll_number
 from logic_model import Fab_Logic
 import json
 
@@ -170,7 +171,7 @@ class ICComponent(ComponentInterface):
                     'absolute top-2 right-2'
                 )
 
-            self.area_input = ui.number(
+            self.area_input = no_scroll_number(
                 "Area (cm²)",
                 value=self.state.area,
                 step=0.01,
@@ -195,7 +196,7 @@ class ICComponent(ComponentInterface):
                 on_change=lambda e: self.update_state(carbon_intensity=e.value),
             ).classes('w-full')
 
-            self.yield_input = ui.number(
+            self.yield_input = no_scroll_number(
                 "Fab yield",
                 value=self.state.fab_yield,
                 min=0.001,

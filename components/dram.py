@@ -6,6 +6,7 @@ from dram_model import Fab_DRAM
 from util import format_carbon
 from components import ComponentInterface
 from components.overwrites import OVERWRITE_TYPE, OverwriteInfo
+from components.uivariants import no_scroll_number
 import json
 
 
@@ -136,7 +137,7 @@ class DRAMComponent(ComponentInterface):
                     'absolute top-2 right-2'
                 )
 
-            self.capacity_input = ui.number(
+            self.capacity_input = no_scroll_number(
                 "Capacity (GB)",
                 value=self.state.capacity,
                 step=0.5,
@@ -154,7 +155,7 @@ class DRAMComponent(ComponentInterface):
                 on_change=lambda e: self.update_state(process_node=e.value),
             ).classes('w-full')
 
-            self.yield_input = ui.number(
+            self.yield_input = no_scroll_number(
                 "Fab yield",
                 value=self.state.fab_yield,
                 min=0.001,

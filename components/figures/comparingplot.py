@@ -6,6 +6,7 @@ from nicegui import ui
 
 from components import ComponentInterface
 from components.overwrites import OverwriteInfo, OVERWRITE_TYPE
+from components.uivariants import no_scroll_input
 
 class ComparingPlotComponent:
     def __init__(self, components):
@@ -374,7 +375,7 @@ class OverwriteCard:
             "gap-2"
         )
 
-        input_box = ui.input(
+        input_box = no_scroll_input(
             label="Add value"
         ).props(
             "type=number"
