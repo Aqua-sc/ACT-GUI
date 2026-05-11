@@ -24,9 +24,9 @@ class Total_Logic():
         ###############################
 
         if not application_enabled:
-            factor = 0
-        elif lifetime == 0:
             factor = 1
+        elif lifetime == 0:
+            factor = 0
         else:
             factor = runtime/lifetime
         

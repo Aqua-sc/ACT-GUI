@@ -13,6 +13,7 @@ import json
 @dataclass
 class ICState:
     gpa: str
+    mpa: str | None
     carbon_intensity: str
     process_node: str
     fab_yield: float
@@ -32,6 +33,7 @@ class ICComponent(ComponentInterface):
 
         self.state = ICState(
             gpa=self.GPAS[0],
+            mpa=None,
             carbon_intensity=self.CARBON_INTENSITIES[0],
             process_node=self.PROCESS_NODES[0].removesuffix("nm"),
             fab_yield=0.875,
@@ -56,6 +58,11 @@ class ICComponent(ComponentInterface):
                 field="gpa",
                 type=OVERWRITE_TYPE.DROPDOWN_STR,
                 values_str=self.GPAS
+            ),
+            OverwriteInfo(
+                field="mpa",
+                type=OVERWRITE_TYPE.RANGED_FP,
+                range_min=0
             ),
             OverwriteInfo(
                 field="process_node",
@@ -125,6 +132,7 @@ class ICComponent(ComponentInterface):
     def _compute(self, state: ICState, save_logic=False):
         logic = Fab_Logic(
             gpa=state.gpa,
+            mpa=state.mpa,
             carbon_intensity=state.carbon_intensity,
             process_node=state.process_node,
             fab_yield=state.fab_yield
@@ -171,6 +179,14 @@ class ICComponent(ComponentInterface):
 
         self.area_input.value = value
         self.area_input.update()
+
+    async def on_mpa_change(self, e):
+        value = max(0.0, float(e.value))
+
+        self.update_state(mpa=value)
+
+        self.mpa_input.value = value
+        self.mpa_input.update()
 
     def delete(self):
         self.card.delete()
@@ -234,6 +250,17 @@ class ICComponent(ComponentInterface):
                 value=self.state.gpa,
                 label="GPA (% abadement)",
                 on_change=lambda e: self.update_state(gpa=e.value)
+            ).classes("w-full")
+
+            self.mpa_input = no_scroll_number(
+                "MPA (g)",
+                value=self.state.mpa,
+                step=20,
+                min=0,
+                validation={
+                    'Must be positive': lambda v: 0 <= float(v)
+                },
+                on_change=self.on_mpa_change
             ).classes("w-full")
 
             self.yield_input = no_scroll_number(

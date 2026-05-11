@@ -15,6 +15,7 @@ class Fab_Logic():
                        carbon_intensity="loc_taiwan",
                        debug=False,
                        fab_yield=0.875,
+                       mpa=None
             ):
 
         self.debug = debug
@@ -102,7 +103,7 @@ class Fab_Logic():
         carbon_gas       = gpa_config[process_node]
         comp_str += f"\tGPA\t\t= {carbon_gas} g/cm2\n"
 
-        carbon_materials = materials_config[process_node]
+        carbon_materials = mpa if mpa else materials_config[process_node] 
         comp_str += f"\tMPA\t\t= {carbon_materials} g/cm²\n"
 
         self.carbon_per_area = (carbon_energy + carbon_gas + carbon_materials)
