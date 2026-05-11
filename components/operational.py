@@ -27,7 +27,7 @@ class OperationalComponent:
         self.result = None
 
     async def on_intensity_change(self, e):
-        value = max(0.0, float(e.value));
+        value = max(0.0, float(e.value))
 
         self.packing_intensity = value
 
@@ -131,14 +131,14 @@ class OperationalComponent:
                         'Must be positive': lambda v: 0 <= float(v)
                     },
                     on_change=self.on_energy_change
-                ).classes("w-64")
+                ).classes("w-32")
             
             ui.select(
                     options=self.CARBON_INTENSITIES,
                     value=self.state.carbon_intensity,
                     label="Carbon intensity",
                     on_change=lambda e: self.update_state(carbon_intensity=e.value),
-                ).classes("w-64")
+                ).classes("w-48")
         
             self.result_label = ResultBox("Result")
 

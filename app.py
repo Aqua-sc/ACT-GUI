@@ -2,7 +2,7 @@ from enum import Enum
 from typing import List
 
 from components import (
-    PackingComponent, OperationalComponent,
+    PackingComponent, OperationalComponent, ApplicationComponent,
     ComponentInterface, ICComponent, DRAMComponent, SSDComponent, HDDComponent,
     PieChartComponent, ComparingPlotComponent
 )
@@ -68,17 +68,18 @@ def refresh():
         comparingPlot.refresh(components)
 
         total = (
-            sum([c.compute() for c in components]) + 
+            applicationcomponent.get_factor() * sum([c.compute() for c in components]) + 
             len(components) * packingcomponent.packing_intensity +
             operationalcomponent.compute()
         )
-        
+
         total_label.set_text(f"Total Carbon: {format_carbon(total)}")
     except Exception as e:
         error_label.set_text(f"Error during refresh: {e}")
 
 packingcomponent = PackingComponent(refreshcallback=refresh)
 operationalcomponent = OperationalComponent(refreshcallback=refresh)
+applicationcomponent = ApplicationComponent(refreshcallback=refresh)
 
 def delete(component: ComponentInterface):
     PALETTE.append(component.get_color())
@@ -137,9 +138,9 @@ ui.add_head_html('''
     </style>
 ''')
 
-with ui.column().classes("h-full overflow-hidden min-w-0 w-[100vw]"):
+with ui.column().classes("h-full overflow-hidden min-w-0 w-full"):
     
-    with ui.row().classes("w-full flex-row justify-between place-items-center"):
+    with ui.row().classes("w-full flex-row justify-between place-items-center  min-w-0"):
         with ui.row():
             ui.label("ACT: Architectural Carbon Modeling Tool").classes(
                             'text-2xl font-bold'
@@ -149,9 +150,10 @@ with ui.column().classes("h-full overflow-hidden min-w-0 w-[100vw]"):
         
         total_label = ui.label(f"Total Carbon: {format_carbon(0)}")
         
-    with ui.row().classes("flex-row w-full justify-between h-20"):
+    with ui.row().classes("flex-row w-full justify-between h-20  min-w-0"):
         packingcomponent.build_ui()
         operationalcomponent.build_ui()
+        applicationcomponent.build_ui()
     
     with ui.row().classes("flex-nowrap min-w-0 h-full"):
         with ui.column().classes("flex-1 h-full"):

@@ -165,7 +165,7 @@ class ICComponent(ComponentInterface):
         self.yield_input.update()
     
     async def on_area_change(self, e):
-        value = max(0.0, float(e.value));
+        value = max(0.0, float(e.value))
 
         self.update_state(area=value)
 

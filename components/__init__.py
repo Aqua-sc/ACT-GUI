@@ -7,3 +7,4 @@ from .figures.piechart import PieChartComponent
 from .figures.comparingplot import ComparingPlotComponent
 from .packing import PackingComponent
 from .operational import OperationalComponent
+from .application import ApplicationComponent

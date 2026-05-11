@@ -9,7 +9,7 @@ class PackingComponent:
         self.packing_intensity = 0 
     
     async def on_intensity_change(self, e):
-        value = max(0.0, float(e.value));
+        value = max(0.0, float(e.value))
 
         self.packing_intensity = value
 
@@ -28,4 +28,4 @@ class PackingComponent:
                     'Must be positive': lambda v: 0 <= float(v)
                 },
                 on_change=self.on_intensity_change
-        ).classes("w-64")
+        ).classes("w-48")

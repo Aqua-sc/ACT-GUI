@@ -127,7 +127,7 @@ class SSDComponent(ComponentInterface):
         self.yield_input.update()
     
     async def on_capacity_change(self, e):
-        value = max(0.0, float(e.value));
+        value = max(0.0, float(e.value))
 
         self.update_state(capacity=value)
 
