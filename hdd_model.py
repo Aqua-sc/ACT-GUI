@@ -7,6 +7,8 @@
 import json
 import sys
 
+from util import format_carbon
+
 class Fab_HDD():
     def __init__(self, config="BarraCuda"):
         ###############################
@@ -20,9 +22,21 @@ class Fab_HDD():
 
         assert config in hdd_config.keys() and "HDD configuration not found"
 
+        comp_str = ""
+        comp_str += f"CAPACITY\t= __CAP__ GB\n"
+
         self.carbon_per_gb = hdd_config[config]
+        comp_str += f"CPS\t\t\t= {self.carbon_per_gb:.2f} g/GB\n"
+        comp_str += f"\n"
+        comp_str += f"E_HDD\t\t= CPS x CAPACITY\n"
+        comp_str += f"\t\t\t= __TOTAL__"
+
         self.carbon        = 0
+        self.computation_string = comp_str
         return
+
+    def get_computation_string(self):
+        return self.computation_string.replace("__CAP__", f"{self.capacity}").replace("__TOTAL__", format_carbon(self.carbon))
 
     def get_cpg(self, ):
         return self.carbon_per_gb

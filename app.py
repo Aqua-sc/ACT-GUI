@@ -113,10 +113,23 @@ def add_component(type: COMPONENT_TYPE):
 
     refresh()
 
+ui.add_head_html('''
+    <style>
+    .q-layout, .q-page {
+        min-height: 0 !important;
+        height: 100vh !important;
+        overflow: hidden !important;
+    }
+    .q-page-container, .nicegui-content {
+        height: 100% !important;
+        overflow: hidden !important;
+    }
+    </style>
+''')
 
-with ui.column():
-    with ui.row().classes("flex-nowrap min-w-0"):
-        with ui.column().classes("flex-1"):
+with ui.column().classes("h-full overflow-hidden min-w-0"):
+    with ui.row().classes("flex-nowrap min-w-0 h-full"):
+        with ui.column().classes("flex-1 h-full"):
             ui.label("ACT: Architectural Carbon Modeling Tool").classes(
                 'text-2xl font-bold'
             )
@@ -147,13 +160,12 @@ with ui.column():
                 )
 
             components_row = ui.row().classes(
-                "flex-nowrap max-w-[38vw] overflow-x-auto overflow-y-hidden p-3 gap-3"
+                "flex-nowrap max-w-[42vw] overflow-x-auto p-3 gap-3 h-full items-start"
             )
         with ui.row().classes(
-            "flex-nowrap min-w-0 max-w-[57vw] overflow-x-auto overflow-y-auto p-3 gap-3"
+            "flex-nowrap min-w-0 max-w-[53vw] overflow-x-auto overflow-y-auto p-3 gap-3"
         ):
             piechart.build_ui()
             comparingPlot.build_ui()
-
 
 ui.run(title='ACT', favicon="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn-icons-png.flaticon.com%2F512%2F6859%2F6859918.png&f=1&nofb=1&ipt=c142a04ad55371696e010c6739a262a017330d994151ebf5091859e898146c45")

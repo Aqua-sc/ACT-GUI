@@ -5,7 +5,7 @@ from nicegui import ui
 from util import format_carbon
 from components import ComponentInterface
 from components.overwrites import OVERWRITE_TYPE, OverwriteInfo
-from components.uivariants import no_scroll_number
+from components.uivariants import no_scroll_number, ResultBox
 from logic_model import Fab_Logic
 import json
 
@@ -95,7 +95,7 @@ class ICComponent(ComponentInterface):
         return keys
 
     def compute(self) -> float:
-        return self._compute(self.state)
+        return self._compute(self.state, save_logic=True)
     
     def compute_changed(self, **kwargs):
         if "process_node" in kwargs:
@@ -108,7 +108,13 @@ class ICComponent(ComponentInterface):
 
         return self._compute(new_state)
     
-    def _compute(self, state: ICState):
+    def get_computation(self) -> str:
+        if not self.logic:
+            return ""
+        else:
+            return self.logic.get_computation_string()
+    
+    def _compute(self, state: ICState, save_logic=False):
         logic = Fab_Logic(
             gpa=state.gpa,
             carbon_intensity=state.carbon_intensity,
@@ -118,13 +124,20 @@ class ICComponent(ComponentInterface):
 
         logic.set_area(state.area)
 
+        if save_logic:
+            self.logic = logic
+
         return logic.get_carbon()
     
     def refresh(self) -> None:
         result = self.compute()
 
-        self.result_label.set_text(
+        self.result_label.set_title(
             format_carbon(result)
+        )
+
+        self.result_label.set_content(
+            self.get_computation()
         )
 
     def update_state(self, **kwargs):
@@ -154,11 +167,18 @@ class ICComponent(ComponentInterface):
     def delete(self):
         self.card.delete()
         self.deletecallback(self)
-    
+
+    def update_width(self, expanded: bool):
+        expanded_classes = "max-w-[33vw] flex-none"
+        if expanded:
+            self.card.classes(add=expanded_classes)
+        else:
+            self.card.classes(remove=expanded_classes)
+
     def build_ui(self):
-        self.card = ui.card()
+        self.card = ui.card().classes("overflow-y-auto max-h-[calc(100vh-200px-1.5rem)] min-w-50")
         with self.card:
-            with ui.row():
+            with ui.row().classes("w-full sticky top-0 bg-white z-10 border-b-10").style(f"border-color: {self.color}"):
                 self.label_input = ui.input(
                     value=self.label,
                     on_change=lambda e: self.set_label(e.value)
@@ -208,6 +228,6 @@ class ICComponent(ComponentInterface):
                 on_change=self.on_yield_change,
             ).classes('w-full')
 
-            self.result_label = ui.label("Result")
+            self.result_label = ResultBox("Result", on_toggle=self.update_width)
 
         self.refresh()

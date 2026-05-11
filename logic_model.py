@@ -7,6 +7,8 @@
 import json
 import sys
 
+from util import format_carbon
+
 class Fab_Logic():
     def __init__(self, process_node=14,
                        gpa="97",
@@ -89,12 +91,26 @@ class Fab_Logic():
         assert process_node in gpa_config.keys()
         assert process_node in materials_config.keys()
 
+        comp_str = ""
+        comp_str += f"AREA\t= __AREA__ cm²\n"
+        comp_str += f"CPA\t\t= 1/yield x (CI_fab x EPA + GPA + MPA)\n"
+
         carbon_energy    = fab_ci * epa_config[process_node]
+        comp_str += f"\tCI_fab * EPA\t= {fab_ci} g/J x {epa_config[process_node]} J/cm² = {carbon_energy} g/cm²\n"
+
         carbon_gas       = gpa_config[process_node]
+        comp_str += f"\tGPA\t\t= {carbon_gas} g/cm2\n"
+
         carbon_materials = materials_config[process_node]
+        comp_str += f"\tMPA\t\t= {carbon_materials} g/cm²\n"
 
         self.carbon_per_area = (carbon_energy + carbon_gas + carbon_materials)
         self.carbon_per_area = self.carbon_per_area / fab_yield
+        comp_str += "\n"
+        comp_str += f"\t\t= 1/{fab_yield:.3f} x ({carbon_energy} g/cm² + {carbon_gas} g/cm² + {carbon_materials} g/cm²)\n"
+        comp_str += f"\t\t= {self.carbon_per_area:.2f} g/cm²\n"
+        comp_str += f"\n"
+        comp_str += f"E_soc\t= CPA x AREA = __TOTAL__"
 
         if self.debug:
             print("[Fab logic] Carbon/area from energy consumed" , carbon_energy)
@@ -103,9 +119,11 @@ class Fab_Logic():
             print("[Fab logic] Carbon/area aggregate"            , self.carbon_per_area)
 
         self.carbon = 0
-
+        self.computation_string = comp_str
         return
 
+    def get_computation_string(self):
+        return self.computation_string.replace("__AREA__", f"{self.area}").replace("__TOTAL__", format_carbon(self.carbon))
 
     def get_cpa(self,):
         return self.carbon_per_area

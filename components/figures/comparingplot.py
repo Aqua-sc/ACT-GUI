@@ -35,7 +35,7 @@ class ComparingPlotComponent:
         label = e.value
 
         component = self.find_component_by_label(label)
-        if (component):
+        if component:
             if self.overwrite:
                 self.overwrite.refresh(component)
             else:
@@ -217,7 +217,7 @@ class ComparingPlotComponent:
             with ui.row().classes("w-full flex-nowrap"):
                 self.overwritecomponent_select = ui.select(
                     options=self.get_component_labels(),
-                    label="Select overwrite component",
+                    label="Overwrite component",
                     on_change=self.on_overwritecomponent_select_change,
                 ).classes("flex-auto")
 
@@ -230,7 +230,7 @@ class ComparingPlotComponent:
 
                 self.components_select = ui.select(
                     options=self.get_component_labels(),
-                    label="Select components",
+                    label="Components",
                     multiple=True,
                     on_change=self.on_components_select_change
                 ).classes("flex-auto")
@@ -322,7 +322,9 @@ class OverwriteCard:
         self.selected_values
         available_options = [v for v in overwrite.values_str if v not in self.selected_values]
 
-        chips_container = ui.row().classes("gap-1 flex-nowrap overflow-x-scroll")
+        chips_container = ui.row().classes(
+            "w-full min-w-0 flex-nowrap overflow-x-auto gap-1"
+        )
 
         select = ui.select(
             options=available_options,
@@ -451,9 +453,5 @@ class OverwriteCard:
                         chip.on("remove", remove_value)
             
             self.refreshcallback()
-
-        
-
-        
 
         refresh_ui()

@@ -6,7 +6,7 @@ from dram_model import Fab_DRAM
 from util import format_carbon
 from components import ComponentInterface
 from components.overwrites import OVERWRITE_TYPE, OverwriteInfo
-from components.uivariants import no_scroll_number
+from components.uivariants import no_scroll_number, ResultBox
 import json
 
 
@@ -71,26 +71,39 @@ class DRAMComponent(ComponentInterface):
             return list(process_node_map.keys())
 
     def compute(self) -> float:
-        return self._compute(self.state)
+        return self._compute(self.state, save_logic=True)
 
     def compute_changed(self, **kwargs):
         new_state = replace(self.state, **kwargs)
         return self._compute(new_state)
     
-    def _compute(self, state: DRAMState):
+    def get_computation(self) -> str:
+        if not self.logic:
+            return ""
+        else:
+            return self.logic.get_computation_string()
+    
+    def _compute(self, state: DRAMState, save_logic=False):
         logic = Fab_DRAM(
             config = state.process_node,
             fab_yield=state.fab_yield
         )
         logic.set_capacity(state.capacity)
 
+        if save_logic:
+            self.logic = logic
+
         return logic.get_carbon()
     
     def refresh(self) -> None:
         result = self.compute()
 
-        self.result_label.set_text(
+        self.result_label.set_title(
             format_carbon(result)
+        )
+
+        self.result_label.set_content(
+            self.get_computation()
         )
 
     def update_state(self, **kwargs):
@@ -120,11 +133,18 @@ class DRAMComponent(ComponentInterface):
     def delete(self):
         self.card.delete()
         self.deletecallback(self)
+
+    def update_width(self, expanded: bool):
+        expanded_classes = "max-w-[33vw] flex-none"
+        if expanded:
+            self.card.classes(add=expanded_classes)
+        else:
+            self.card.classes(remove=expanded_classes)
     
     def build_ui(self):
-        self.card = ui.card()
+        self.card = ui.card().classes("overflow-y-auto max-h-[calc(100vh-200px-1.5rem)] min-w-50")
         with self.card:
-            with ui.row():
+            with ui.row().classes("w-full sticky top-0 bg-white z-10 border-b-10").style(f"border-color: {self.color}"):
                 self.label_input = ui.input(
                     value=self.label,
                     on_change=lambda e: self.set_label(e.value)
@@ -167,7 +187,7 @@ class DRAMComponent(ComponentInterface):
                 on_change=self.on_yield_change,
             ).classes('w-full')
 
-            self.result_label = ui.label("Result")
+            self.result_label = ResultBox("Result", on_toggle=self.update_width)
 
         self.refresh()
 

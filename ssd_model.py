@@ -7,6 +7,8 @@
 import json
 import sys
 
+from util import format_carbon
+
 class Fab_SSD():
     def __init__(self, config="nand_10nm", fab_yield=0.875):
         ###############################
@@ -23,11 +25,23 @@ class Fab_SSD():
 
         assert config in ssd_config.keys() and "SSD configuration not found"
 
+        comp_str = ""
+        comp_str += f"CAPACITY\t= __CAP__ GB\n"
+
         self.fab_yield = fab_yield
 
         self.carbon_per_gb = ssd_config[config] / self.fab_yield
+        comp_str += f"CPS\t\t\t= {self.carbon_per_gb:.2f} g/GB\n"
+        comp_str += f"\n"
+        comp_str += f"E_SSD\t\t= 1/{fab_yield:.3f} x CPS x CAPACITY\n"
+        comp_str += f"\t\t\t= __TOTAL__"
+
         self.carbon        = 0
+        self.computation_string = comp_str
         return
+    
+    def get_computation_string(self):
+        return self.computation_string.replace("__CAP__", f"{self.capacity}").replace("__TOTAL__", format_carbon(self.carbon))
 
     def get_cpg(self, ):
         return self.carbon_per_gb
