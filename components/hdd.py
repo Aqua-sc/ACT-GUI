@@ -129,9 +129,11 @@ class HDDComponent(ComponentInterface):
             self.card.classes(remove=expanded_classes)
     
     def build_ui(self):
-        self.card = ui.card().classes("overflow-y-auto max-h-[calc(100vh-200px-1.5rem)] min-w-50")
+        self.card = ui.card().classes("overflow-y-auto max-h-[calc(100vh-200px-1.5rem)] min-w-50 border-4 bg-white").style(
+            f"border-color: {self.color}"
+        )
         with self.card:
-            with ui.row().classes("w-full sticky top-0 bg-white z-10 border-b-10").style(f"border-color: {self.color}"):
+            with ui.row().classes("w-full sticky top-0 bg-white z-10 border-b-2 border-gray-500"):
                 self.label_input = ui.input(
                     value=self.label,
                     on_change=lambda e: self.set_label(e.value)

@@ -18,28 +18,27 @@ class COMPONENT_TYPE(Enum):
     SSD = 3
     HDD = 4
 
-PALETTE =  [
-    '#1f77b4',
-    '#ff7f0e',  
-    '#2ca02c',  
-    '#d62728',  
-    '#9467bd',  
-    '#8c564b',  
-    '#e377c2',  
-    '#7f7f7f',  
-    '#bcbd22',  
-    '#17becf',  
-
-    '#393b79',  
-    '#637939',  
-    '#8c6d31',  
-    '#843c39',  
-    '#7b4173',  
-    "#aadae8",  
-    "#0a441b",  
-    '#756bb1',  
-    '#636363',  
-    '#e6550d',  
+PALETTE =  [ # Generated using https://mokole.com/palette.html
+    '#7fffd4',
+    '#ffa07a',  
+    '#dda0dd',  
+    '#f0e68c',  
+    '#ff00ff',  
+    '#adff2f',  
+    '#0000ff',  
+    '#00bfff',  
+    '#4169e1',  
+    '#00ff7f',  
+    '#c71585',  
+    '#ffd700',  
+    '#ff8c00',  
+    '#ff0000',  
+    '#00008b',  
+    "#808000",  
+    "#7f0000",  
+    '#2e8b57',  
+    '#2f4f4f',  
+    '#dcdcdc',  
 ]
 
 MAX_COMPONENTS = len(PALETTE)
