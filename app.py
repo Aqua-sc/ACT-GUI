@@ -2,6 +2,7 @@ from enum import Enum
 from typing import List
 
 from components import (
+    PackingComponent,
     ComponentInterface, ICComponent, DRAMComponent, SSDComponent, HDDComponent,
     PieChartComponent, ComparingPlotComponent
 )
@@ -64,10 +65,12 @@ def refresh():
         piechart.refresh(components)
         comparingPlot.refresh(components)
 
-        total = sum([c.compute() for c in components])
+        total = sum([c.compute() for c in components]) + len(components) * packingcomponent.packing_intensity
         total_label.set_text(f"Total Carbon: {format_carbon(total)}")
     except Exception as e:
         error_label.set_text(f"Error during refresh: {e}")
+
+packingcomponent = PackingComponent(refreshcallback=refresh)
 
 def delete(component: ComponentInterface):
     PALETTE.append(component.get_color())
@@ -126,17 +129,24 @@ ui.add_head_html('''
     </style>
 ''')
 
-with ui.column().classes("h-full overflow-hidden min-w-0"):
+with ui.column().classes("h-full overflow-hidden min-w-0 w-[100vw]"):
+    
+    with ui.row().classes("w-full flex-row justify-between place-items-center"):
+        with ui.row():
+            ui.label("ACT: Architectural Carbon Modeling Tool").classes(
+                            'text-2xl font-bold'
+                        )
+            
+            error_label = ui.label().classes('text-red-600')
+        
+        total_label = ui.label(f"Total Carbon: {format_carbon(0)}")
+        
+    with ui.row().classes("h-20"):
+        packingcomponent.build_ui()
+        # TODO: OPP
+    
     with ui.row().classes("flex-nowrap min-w-0 h-full"):
         with ui.column().classes("flex-1 h-full"):
-            ui.label("ACT: Architectural Carbon Modeling Tool").classes(
-                'text-2xl font-bold'
-            )
-
-            total_label = ui.label(f"Total Carbon: {format_carbon(0)}")
-
-            error_label = ui.label().classes('text-red-600')
-
             with ui.row():
                 ui.button(
                     "Add IC",

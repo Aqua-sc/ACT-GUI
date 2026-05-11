@@ -129,7 +129,7 @@ class HDDComponent(ComponentInterface):
             self.card.classes(remove=expanded_classes)
     
     def build_ui(self):
-        self.card = ui.card().classes("overflow-y-auto max-h-[calc(100vh-200px-1.5rem)] min-w-50 border-4 bg-white").style(
+        self.card = ui.card().classes("overflow-y-auto max-h-[calc(100vh-220px-1.5rem)] min-w-50 border-4 bg-white").style(
             f"border-color: {self.color}"
         )
         with self.card:
