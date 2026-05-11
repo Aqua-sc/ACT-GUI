@@ -12,7 +12,7 @@ class ResultBox:
 
             self.content = ui.column().classes("pl-4 hidden")
             with self.content:
-                self.content_label = ui.label("Result").classes("text-sm whitespace-pre-wrap font-mono")
+                self.content_label = ui.label("Result").classes("text-sm whitespace-pre font-mono")
         
         self.header.on("click", self.toggle)
 

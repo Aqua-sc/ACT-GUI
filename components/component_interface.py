@@ -23,3 +23,8 @@ class ComponentInterface:
     
     def get_overwrites(self) -> List[OverwriteInfo]:
         pass
+
+    def change_max_height(self, offset):
+        self.card.classes(remove=self.maxheightclass)
+        self.maxheightclass=f"max-h-[calc(100vh-{offset}px-1.5rem)]"
+        self.card.classes(add=self.maxheightclass)

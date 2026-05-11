@@ -14,7 +14,8 @@ class Fab_Logic():
                        gpa="97",
                        carbon_intensity="loc_taiwan",
                        debug=False,
-                       fab_yield=0.875):
+                       fab_yield=0.875,
+            ):
 
         self.debug = debug
 

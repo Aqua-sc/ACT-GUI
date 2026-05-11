@@ -10,14 +10,6 @@ class ApplicationComponent:
         self.runtime = 0
         self.enabled = False
 
-    def get_factor(self):
-        if not self.enabled:
-            return 1
-        elif self.runtime == 0:
-            return 0
-        else:
-            return self.runtime/self.lifetime
-    
     async def on_lifetime_change(self, e):
         value = max(0.0, float(e.value))
 

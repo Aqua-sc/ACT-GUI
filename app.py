@@ -6,11 +6,13 @@ from components import (
     ComponentInterface, ICComponent, DRAMComponent, SSDComponent, HDDComponent,
     PieChartComponent, ComparingPlotComponent
 )
+from components.uivariants import ResultBox
 from dram_model import Fab_DRAM
 from logic_model import Fab_Logic
 from nicegui import ui
 import plotly.graph_objects as go
 from ssd_model import Fab_SSD
+from total_model import Total_Logic
 from util import format_carbon
 
 class COMPONENT_TYPE(Enum):
@@ -45,6 +47,7 @@ PALETTE =  [ # Generated using https://mokole.com/palette.html
 MAX_COMPONENTS = len(PALETTE)
 
 components: List[ComponentInterface] = []
+offset=220
 
 components_row = None
 total_label = None
@@ -67,13 +70,18 @@ def refresh():
         piechart.refresh(components)
         comparingPlot.refresh(components)
 
-        total = (
-            applicationcomponent.get_factor() * sum([c.compute() for c in components]) + 
-            len(components) * packingcomponent.packing_intensity +
-            operationalcomponent.compute()
+        logic = Total_Logic(
+            operational=operationalcomponent.compute(),
+            embodied=sum([c.compute() for c in components]),
+            lifetime=applicationcomponent.lifetime,
+            runtime=applicationcomponent.runtime,
+            application_enabled=applicationcomponent.enabled
         )
 
-        total_label.set_text(f"Total Carbon: {format_carbon(total)}")
+        total = logic.get_carbon()
+
+        total_label.set_title(f"Total Carbon: {format_carbon(total)}")
+        total_label.set_content(logic.get_computation_string())
     except Exception as e:
         error_label.set_text(f"Error during refresh: {e}")
 
@@ -122,6 +130,7 @@ def add_component(type: COMPONENT_TYPE):
     with components_row:
         component.build_ui()
 
+    component.change_max_height(offset)
     refresh()
 
 ui.add_head_html('''
@@ -138,9 +147,14 @@ ui.add_head_html('''
     </style>
 ''')
 
+def update_component_maxheights(total_expanded: bool):
+    offset = 325 if total_expanded else 220
+    for component in components:
+        component.change_max_height(offset)
+
 with ui.column().classes("h-full overflow-hidden min-w-0 w-full"):
     
-    with ui.row().classes("w-full flex-row justify-between place-items-center  min-w-0"):
+    with ui.row().classes("w-full flex-row justify-between min-w-0"):
         with ui.row():
             ui.label("ACT: Architectural Carbon Modeling Tool").classes(
                             'text-2xl font-bold'
@@ -148,7 +162,8 @@ with ui.column().classes("h-full overflow-hidden min-w-0 w-full"):
             
             error_label = ui.label().classes('text-red-600')
         
-        total_label = ui.label(f"Total Carbon: {format_carbon(0)}")
+        with ui.row().classes("flex-none"):
+            total_label = ResultBox("", on_toggle=update_component_maxheights)
         
     with ui.row().classes("flex-row w-full justify-between h-20  min-w-0"):
         packingcomponent.build_ui()
@@ -186,5 +201,7 @@ with ui.column().classes("h-full overflow-hidden min-w-0 w-full"):
         ):
             piechart.build_ui()
             comparingPlot.build_ui()
+
+refresh()
 
 ui.run(title='ACT', favicon="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fcdn-icons-png.flaticon.com%2F512%2F6859%2F6859918.png&f=1&nofb=1&ipt=c142a04ad55371696e010c6739a262a017330d994151ebf5091859e898146c45")
