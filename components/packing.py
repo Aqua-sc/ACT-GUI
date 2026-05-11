@@ -28,4 +28,4 @@ class PackingComponent:
                     'Must be positive': lambda v: 0 <= float(v)
                 },
                 on_change=self.on_intensity_change
-        ).classes("w-full")
+        ).classes("w-64")

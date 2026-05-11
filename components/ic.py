@@ -114,7 +114,6 @@ class ICComponent(ComponentInterface):
             )
 
         new_state = replace(self.state, **kwargs)
-
         return self._compute(new_state)
     
     def get_computation(self) -> str:

@@ -2,7 +2,7 @@ from enum import Enum
 from typing import List
 
 from components import (
-    PackingComponent,
+    PackingComponent, OperationalComponent,
     ComponentInterface, ICComponent, DRAMComponent, SSDComponent, HDDComponent,
     PieChartComponent, ComparingPlotComponent
 )
@@ -58,6 +58,8 @@ def refresh():
         for component in components:
             component.refresh()
 
+        operationalcomponent.refresh()
+
         labels = [x.get_label() for x in components]
         if len(labels) != len(set(labels)):
             error_label.set_text(f"Make sure all components have a unique name")
@@ -65,12 +67,18 @@ def refresh():
         piechart.refresh(components)
         comparingPlot.refresh(components)
 
-        total = sum([c.compute() for c in components]) + len(components) * packingcomponent.packing_intensity
+        total = (
+            sum([c.compute() for c in components]) + 
+            len(components) * packingcomponent.packing_intensity +
+            operationalcomponent.compute()
+        )
+        
         total_label.set_text(f"Total Carbon: {format_carbon(total)}")
     except Exception as e:
         error_label.set_text(f"Error during refresh: {e}")
 
 packingcomponent = PackingComponent(refreshcallback=refresh)
+operationalcomponent = OperationalComponent(refreshcallback=refresh)
 
 def delete(component: ComponentInterface):
     PALETTE.append(component.get_color())
@@ -141,9 +149,9 @@ with ui.column().classes("h-full overflow-hidden min-w-0 w-[100vw]"):
         
         total_label = ui.label(f"Total Carbon: {format_carbon(0)}")
         
-    with ui.row().classes("h-20"):
+    with ui.row().classes("flex-row w-full justify-between h-20"):
         packingcomponent.build_ui()
-        # TODO: OPP
+        operationalcomponent.build_ui()
     
     with ui.row().classes("flex-nowrap min-w-0 h-full"):
         with ui.column().classes("flex-1 h-full"):
