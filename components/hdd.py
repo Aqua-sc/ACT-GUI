@@ -141,7 +141,7 @@ class HDDComponent(ComponentInterface):
                     icon='delete',
                     on_click=self.delete  
                 ).props('flat round dense color=red').classes(
-                    'absolute top-1 right-2'
+                    'absolute top-0 right-0'
                 )
 
             self.capacity_input = no_scroll_number(

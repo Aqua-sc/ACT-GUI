@@ -28,9 +28,10 @@ class ICComponent(ComponentInterface):
 
         self.PROCESS_NODES = self.get_process_nodes()
         self.CARBON_INTENSITIES = self.get_carbon_intensities()
+        self.GPAS = self.get_gpas()
 
         self.state = ICState(
-            gpa="95",
+            gpa=self.GPAS[0],
             carbon_intensity=self.CARBON_INTENSITIES[0],
             process_node=self.PROCESS_NODES[0].removesuffix("nm"),
             fab_yield=0.875,
@@ -50,6 +51,11 @@ class ICComponent(ComponentInterface):
                 field="area",
                 type=OVERWRITE_TYPE.RANGED_FP,
                 range_min=0
+            ),
+            OverwriteInfo(
+                field="gpa",
+                type=OVERWRITE_TYPE.DROPDOWN_STR,
+                values_str=self.GPAS
             ),
             OverwriteInfo(
                 field="process_node",
@@ -74,6 +80,9 @@ class ICComponent(ComponentInterface):
     
     def get_color(self):
         return self.color
+    
+    def get_gpas(self) -> List[int]:
+        return ["95", "97", "99"]
     
     def get_process_nodes(self) -> List[str]:
         with open("logic/gpa_95.json", "r") as f:
@@ -188,7 +197,7 @@ class ICComponent(ComponentInterface):
                     icon='delete',
                     on_click=self.delete  
                 ).props('flat round dense color=red').classes(
-                    'absolute top-2 right-2'
+                    'absolute top-0 right-0'
                 )
 
             self.area_input = no_scroll_number(
@@ -200,21 +209,28 @@ class ICComponent(ComponentInterface):
                     'Must be positive': lambda v: 0 <= float(v)
                 },
                 on_change=self.on_area_change
-            ).classes('w-full')
+            ).classes("w-full")
 
             ui.select(
                 options=self.PROCESS_NODES,
                 value=self.state.process_node+"nm",
                 label="Process node",
                 on_change=lambda e: self.update_state(process_node=e.value.removesuffix("nm")),
-            ).classes('w-full')
+            ).classes("w-full")
 
             ui.select(
                 options=self.CARBON_INTENSITIES,
                 value=self.state.carbon_intensity,
                 label="Carbon intensity",
                 on_change=lambda e: self.update_state(carbon_intensity=e.value),
-            ).classes('w-full')
+            ).classes("w-full")
+
+            ui.select(
+                options=self.GPAS,
+                value=self.state.gpa,
+                label="GPA (% abadement)",
+                on_change=lambda e: self.update_state(gpa=e.value)
+            ).classes("w-full")
 
             self.yield_input = no_scroll_number(
                 "Fab yield",
