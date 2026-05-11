@@ -92,6 +92,8 @@ SSD   = Fab_SSD(config  = "nand_30nm", fab_yield=ic_yield)
 # Computing the IC footprint
 ##################################
 IC_Logic.set_area(sum(fairphone3_IC_areas)/100.)
+print(sum(fairphone3_IC_areas)/100.)
+print(len(fairphone3_IC_areas))
 CPU_Logic.set_area(fairphone_cpu_area/100.)
 DRAM.set_capacity(fairphone_ram)
 SSD.set_capacity(fairphone_storage)

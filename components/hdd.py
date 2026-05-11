@@ -110,9 +110,11 @@ class HDDComponent(ComponentInterface):
         self.refreshcallback()
 
     async def on_capacity_change(self, e):
-        value = max(0.0, float(e.value))
-
-        self.update_state(capacity=value)
+        if e.value != 0 and not e.value:
+            value = None
+        else:
+            value = max(0.0, float(e.value))
+            self.update_state(capacity=value)
 
         self.capacity_input.value = value
         self.capacity_input.update()
@@ -152,7 +154,7 @@ class HDDComponent(ComponentInterface):
                 step=0.5,
                 min=0,
                 validation={
-                    'Must be positive': lambda v: 0 <= float(v)
+                    'Must be positive': lambda v: not v or 0 <= float(v)
                 },
                 on_change=self.on_capacity_change,
             ).classes('w-full')

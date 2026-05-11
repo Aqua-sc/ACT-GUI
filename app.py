@@ -72,7 +72,7 @@ def refresh():
 
         logic = Total_Logic(
             operational=operationalcomponent.compute(),
-            embodied=sum([c.compute() for c in components]),
+            embodied=sum([c.compute() for c in components]) + len(components) * packingcomponent.packing_intensity,
             lifetime=applicationcomponent.lifetime,
             runtime=applicationcomponent.runtime,
             application_enabled=applicationcomponent.enabled

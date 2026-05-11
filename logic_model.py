@@ -98,7 +98,7 @@ class Fab_Logic():
         comp_str += f"CPA\t\t= 1/yield x (CI_fab x EPA + GPA + MPA)\n"
 
         carbon_energy    = fab_ci * epa_config[process_node]
-        comp_str += f"\tCI_fab * EPA\t= {fab_ci} g/J x {epa_config[process_node]} J/cm² = {carbon_energy} g/cm²\n"
+        comp_str += f"\tCI_fab * EPA\t= {fab_ci} g/kWh x {epa_config[process_node]} kWh/cm² = {carbon_energy} g/cm²\n"
 
         carbon_gas       = gpa_config[process_node]
         comp_str += f"\tGPA\t\t= {carbon_gas} g/cm2\n"

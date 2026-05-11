@@ -25,19 +25,8 @@ class OperationalComponent:
         )
         self.refreshcallback = refreshcallback
         self.result = None
-
-    async def on_intensity_change(self, e):
-        value = max(0.0, float(e.value))
-
-        self.packing_intensity = value
-
-        self.intensity_input.value = value
-        self.intensity_input.update()
-
-        self.label = "Operational FP"
-
-        self.refreshcallback()
         self.color = "#000000"
+        self.label = "Operational FP"
 
     def get_overwrites(self) -> List[OverwriteInfo]:
         return [
@@ -112,23 +101,39 @@ class OperationalComponent:
         self.state = replace(self.state, **kwargs)
         self.refreshcallback()
 
-    async def on_energy_change(self, e):
-        value = max(0.0, float(e.value))
+    async def on_intensity_change(self, e):
+        if e.value != 0 and not e.value:
+            value = None
+        else:
+            value = max(0.0, float(e.value))
+            self.packing_intensity = value
 
-        self.update_state(energy=value)
+        self.intensity_input.value = value
+        self.intensity_input.update()
+
+        self.refreshcallback()
+
+    async def on_energy_change(self, e):
+        if e.value != 0 and not e.value:
+            value = None
+        else:
+            value = max(0.0, float(e.value))
+            self.update_state(energy=value)
 
         self.energy_input.value = value
         self.energy_input.update()
+
+        self.refreshcallback()
     
     def build_ui(self):
         with ui.column().classes("flex-1 flex-row gap-2"):
             self.energy_input = no_scroll_number(
-                    "Energy (J)",
+                    "Energy (kWh)",
                     value=self.state.energy,
                     step=1,
                     min=0,
                     validation={
-                        'Must be positive': lambda v: 0 <= float(v)
+                        'Must be positive': lambda v: not v or 0 <= float(v)
                     },
                     on_change=self.on_energy_change
                 ).classes("w-32")

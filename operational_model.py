@@ -49,8 +49,8 @@ class Operational_Logic():
         # Aggregating model
         ###############################
         comp_str = ""
-        comp_str += f"CI_use\t= {fab_ci} g/J\n"
-        comp_str += f"ENERGY\t= {energy} J\n"
+        comp_str += f"CI_use\t= {fab_ci} g/kWh\n"
+        comp_str += f"ENERGY\t= {energy} kWh\n"
         self.carbon = fab_ci * energy
         comp_str += "\n"
         comp_str += f"OP_CF\t = {format_carbon(self.carbon)}"

@@ -11,9 +11,11 @@ class ApplicationComponent:
         self.enabled = False
 
     async def on_lifetime_change(self, e):
-        value = max(0.0, float(e.value))
-
-        self.lifetime = value
+        if e.value != 0 and not e.value:
+            value = None
+        else:
+            value = max(0.0, float(e.value))
+            self.lifetime = value
 
         self.lifetime_input.value = value
         self.lifetime_input.update()
@@ -21,6 +23,9 @@ class ApplicationComponent:
         self.refreshcallback()
 
     async def on_runtime_change(self, e):
+        if e.value != 0 and not e.value:
+            return
+        
         value = max(0.0, float(e.value))
 
         self.runtime = value
@@ -48,7 +53,7 @@ class ApplicationComponent:
                     step=0.5,
                     min=0,
                     validation={
-                        'Must be positive': lambda v: 0 <= float(v)
+                        'Must be positive': lambda v: not v or 0 <= float(v)
                     },
                     on_change=self.on_runtime_change
             ).classes("w-32")
@@ -59,7 +64,7 @@ class ApplicationComponent:
                     step=1,
                     min=0,
                     validation={
-                        'Must be positive': lambda v: 0 <= float(v)
+                        'Must be positive': lambda v: not v or 0 <= float(v)
                     },
                     on_change=self.on_lifetime_change
             ).classes("w-32")

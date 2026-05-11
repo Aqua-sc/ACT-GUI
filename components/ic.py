@@ -165,25 +165,31 @@ class ICComponent(ComponentInterface):
         self.refreshcallback()
 
     async def on_yield_change(self, e):
-        value = max(0.001, min(1.0, float(e.value)))
-
-        self.update_state(fab_yield=value)
+        if e.value != 0 and not e.value:
+            value = None
+        else:
+            value = max(0.001, min(1.0, float(e.value)))
+            self.update_state(fab_yield=value)
 
         self.yield_input.value = value
         self.yield_input.update()
     
     async def on_area_change(self, e):
-        value = max(0.0, float(e.value))
-
-        self.update_state(area=value)
+        if e.value != 0 and not e.value:
+            value = None
+        else:
+            value = max(0.0, float(e.value))
+            self.update_state(area=value)
 
         self.area_input.value = value
         self.area_input.update()
 
     async def on_mpa_change(self, e):
-        value = max(0.0, float(e.value))
-
-        self.update_state(mpa=value)
+        if e.value != 0 and not e.value:
+            value = None
+        else:
+            value = max(0.0, float(e.value))
+            self.update_state(mpa=value)
 
         self.mpa_input.value = value
         self.mpa_input.update()
@@ -226,7 +232,7 @@ class ICComponent(ComponentInterface):
                 step=0.01,
                 min=0,
                 validation={
-                    'Must be positive': lambda v: 0 <= float(v)
+                    'Must be positive': lambda v: not v or 0 <= float(v)
                 },
                 on_change=self.on_area_change
             ).classes("w-full")
@@ -258,7 +264,7 @@ class ICComponent(ComponentInterface):
                 step=20,
                 min=0,
                 validation={
-                    'Must be positive': lambda v: 0 <= float(v)
+                    'Must be positive': lambda v: not v or 0 <= float(v)
                 },
                 on_change=self.on_mpa_change
             ).classes("w-full")
@@ -270,7 +276,7 @@ class ICComponent(ComponentInterface):
                 max=1,
                 step=0.01,
                 validation={
-                    'Must be between 0 and 1': lambda v: 0 < float(v) <= 1
+                    'Must be between 0 and 1': lambda v: not v or 0 < float(v) <= 1
                 },
                 on_change=self.on_yield_change,
             ).classes('w-full')
