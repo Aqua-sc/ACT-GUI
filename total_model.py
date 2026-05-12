@@ -31,8 +31,8 @@ class Total_Logic():
             factor = runtime/lifetime
         
         comp_str = ""
-        comp_str += f"OP_CF\t= {operational:.2f} g CO2\n"
-        comp_str += f"E_CF\t= {embodied:.2f} g CO2\n"
+        comp_str += f"OP_CF\t= {format_carbon(operational)}\n"
+        comp_str += f"E_CF\t= {format_carbon(embodied)}\n"
         comp_str += f"T/LT\t= "
         if not application_enabled or lifetime == 0:
             comp_str += f"{factor} (disabled or lifetime 0)\n"

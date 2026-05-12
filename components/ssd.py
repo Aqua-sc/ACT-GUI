@@ -150,7 +150,10 @@ class SSDComponent(ComponentInterface):
             self.card.classes(remove=expanded_classes)
     
     def build_ui(self):
-        self.card = ui.card().classes("overflow-y-auto max-h-[calc(100vh-220px-1.5rem)] min-w-50 border-4 bg-white").style(
+        self.maxheightclass="max-h-[calc(100vh-220px-1.5rem)]"
+        self.card = ui.card().classes(
+            f"overflow-y-auto {self.maxheightclass} min-w-50 border-4 bg-white"
+        ).style(
             f"border-color: {self.color}"
         )
         with self.card:
