@@ -6,7 +6,7 @@ From the [original ACT repository:](https://github.com/alugupta/ACT)
 > 
 > ACT addresses a crucial gap in quantifying and enabling sustainability-driven hardware design space exploration, and serves as a call-to-action for computer architects to consider sustainability as a first-order citizen, alongside performance, power, and area (PPA).
 
-This projects completes the implementation of the full ACT model and extends it with a graphical user interface. For any details regarding the model or python models, refer to the [original repository](https://github.com/alugupta/ACT)
+This projects completes the implementation of the full ACT model and extends it with a graphical user interface. For any details regarding the ACT model or it's python implementation, refer to the [original repository](https://github.com/alugupta/ACT)
 
 ## Starting the GUI
 
